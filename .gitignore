@@ -12,3 +12,4 @@ frontend/.angular/
 # OS
 .DS_Store
 *Zone.Identifier
+auth-service/.env.test
