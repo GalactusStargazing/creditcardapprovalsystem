@@ -13,3 +13,4 @@ frontend/.angular/
 .DS_Store
 *Zone.Identifier
 auth-service/.env.test
+application-service/.env.test
