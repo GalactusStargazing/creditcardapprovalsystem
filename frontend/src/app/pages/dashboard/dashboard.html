@@ -1,0 +1,43 @@
+<mat-toolbar color="primary">
+  <span>Credit Card Portal</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/dashboard">Dashboard</button>
+  <button mat-button routerLink="/apply">Apply</button>
+  <button mat-button routerLink="/applications">My Applications</button>
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="container">
+  <h1>Welcome, {{ authService.currentUser()?.full_name || '...' }}</h1>
+
+  <div class="stats-row">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <p class="stat-label">Total Applications</p>
+        <p class="stat-value">{{ applications().length }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <p class="stat-label">Latest Status</p>
+        <p class="stat-value">{{ latestStatus() }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <h2>Recent Applications</h2>
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (recentApplications().length === 0) {
+    <p>No applications yet. <a routerLink="/apply">Apply for a card</a> to get started.</p>
+  } @else {
+    @for (app of recentApplications(); track app.id) {
+      <mat-card class="app-row">
+        <mat-card-content>
+          <strong>{{ app.card_type }}</strong> — {{ app.status }} — {{ app.created_at | date:'medium' }}
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

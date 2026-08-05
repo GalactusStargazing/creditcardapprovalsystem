@@ -1,0 +1,104 @@
+<mat-toolbar color="primary">
+  <span>Credit Card Portal</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/dashboard">Dashboard</button>
+  <button mat-button routerLink="/apply">Apply</button>
+  <button mat-button routerLink="/applications">My Applications</button>
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Credit Card Application</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="card-options">
+        @for (option of cardOptions; track option.value) {
+          <div class="card-option">
+            <strong>{{ option.label }}</strong>
+            <span>{{ option.fee }} · {{ option.limit }}</span>
+          </div>
+        }
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Card Type</mat-label>
+          <mat-select formControlName="card_type">
+            @for (option of cardOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name</mat-label>
+          <input matInput formControlName="full_name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date of Birth</mat-label>
+          <input matInput type="date" formControlName="date_of_birth" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>PAN Number</mat-label>
+          <input matInput formControlName="pan_number" placeholder="ABCDE1234F" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mobile Number</mat-label>
+          <input matInput formControlName="mobile_number" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Address</mat-label>
+          <textarea matInput formControlName="address" rows="2"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Occupation</mat-label>
+          <mat-select formControlName="occupation">
+            <mat-option value="SALARIED">Salaried</mat-option>
+            <mat-option value="SELF_EMPLOYED">Self-Employed</mat-option>
+            <mat-option value="STUDENT">Student</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Employer (optional)</mat-label>
+          <input matInput formControlName="employer" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Monthly Income (₹)</mat-label>
+          <input matInput type="number" formControlName="monthly_income" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Existing Loan Amount (₹)</mat-label>
+          <input matInput type="number" formControlName="existing_loan_amount" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Credit Score (300-900)</mat-label>
+          <input matInput type="number" formControlName="credit_score" />
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <p class="error">{{ errorMessage() }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" [disabled]="loading()" class="full-width">
+          {{ loading() ? 'Submitting...' : 'Submit Application' }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

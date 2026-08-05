@@ -1,0 +1,42 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.container {
+  max-width: 600px;
+  margin: 24px auto;
+  padding: 0 16px 48px;
+}
+
+.card-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.card-option {
+  flex: 1;
+  min-width: 150px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-option span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.error {
+  color: #c62828;
+  font-size: 0.9rem;
+}

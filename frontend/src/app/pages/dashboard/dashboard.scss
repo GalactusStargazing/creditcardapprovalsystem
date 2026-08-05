@@ -1,0 +1,34 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.container {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  flex: 1;
+}
+
+.stat-label {
+  color: #666;
+  margin: 0;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
+.app-row {
+  margin-bottom: 8px;
+}

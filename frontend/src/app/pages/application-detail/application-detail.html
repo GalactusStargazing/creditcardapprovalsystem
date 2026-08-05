@@ -1,0 +1,42 @@
+<mat-toolbar color="primary">
+  <span>Credit Card Portal</span>
+  <span class="spacer"></span>
+  <button mat-button routerLink="/dashboard">Dashboard</button>
+  <button mat-button routerLink="/apply">Apply</button>
+  <button mat-button routerLink="/applications">My Applications</button>
+  <button mat-button (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="container">
+  @if (loading()) {
+    <p>Loading...</p>
+  } @else if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  } @else if (application()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ application()!.card_type }} Card Application</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <span class="status" [class]="application()!.status.toLowerCase()">{{ application()!.status }}</span>
+
+        @if (application()!.card_number) {
+          <div class="card-number-box">
+            <p class="label">Your Card Number</p>
+            <p class="card-number">{{ application()!.card_number }}</p>
+          </div>
+        }
+
+        <div class="detail-grid">
+          <div><span class="label">Applicant</span><p>{{ application()!.full_name }}</p></div>
+          <div><span class="label">Email</span><p>{{ application()!.email }}</p></div>
+          <div><span class="label">Mobile</span><p>{{ application()!.mobile_number }}</p></div>
+          <div><span class="label">Occupation</span><p>{{ application()!.occupation }}</p></div>
+          <div><span class="label">Monthly Income</span><p>₹{{ application()!.monthly_income }}</p></div>
+          <div><span class="label">Credit Score</span><p>{{ application()!.credit_score }}</p></div>
+          <div><span class="label">Applied On</span><p>{{ application()!.created_at | date:'medium' }}</p></div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
