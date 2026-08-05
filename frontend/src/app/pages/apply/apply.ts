@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ApplicationService } from '../../services/application.service';
 import { AuthService } from '../../services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-apply',
@@ -23,6 +24,7 @@ import { AuthService } from '../../services/auth.service';
     MatButtonModule,
     MatCardModule,
     MatToolbarModule,
+    MatIconModule,
   ],
   templateUrl: './apply.html',
   styleUrl: './apply.scss',

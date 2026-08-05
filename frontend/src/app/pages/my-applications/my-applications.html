@@ -1,5 +1,6 @@
 <mat-toolbar color="primary">
-  <span>Credit Card Portal</span>
+  <mat-icon class="logo-icon">credit_card</mat-icon>
+  <span class="brand">Credit Card Portal</span>
   <span class="spacer"></span>
   <button mat-button routerLink="/dashboard">Dashboard</button>
   <button mat-button routerLink="/apply">Apply</button>
@@ -18,9 +19,12 @@
     @for (app of applications(); track app.id) {
       <mat-card class="app-card" [routerLink]="['/applications', app.id]">
         <mat-card-content class="app-row">
-          <div>
-            <strong>{{ app.card_type }}</strong>
-            <p class="sub">Submitted {{ app.created_at | date:'medium' }}</p>
+          <div class="app-row-left">
+            <mat-icon [class]="'card-icon ' + app.card_type.toLowerCase()">credit_card</mat-icon>
+            <div>
+              <strong>{{ app.card_type }}</strong>
+              <p class="sub">Submitted {{ app.created_at | date:'medium' }}</p>
+            </div>
           </div>
           <span class="status" [class]="app.status.toLowerCase()">{{ app.status }}</span>
         </mat-card-content>

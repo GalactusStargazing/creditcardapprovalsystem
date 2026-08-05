@@ -4,14 +4,14 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { ApplicationService } from '../../services/application.service';
 import { AuthService } from '../../services/auth.service';
 import { ApplicationListItem } from '../../models/application.model';
 
 @Component({
   selector: 'app-my-applications',
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatToolbarModule, MatChipsModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatToolbarModule, MatIconModule],
   templateUrl: './my-applications.html',
   styleUrl: './my-applications.scss',
 })

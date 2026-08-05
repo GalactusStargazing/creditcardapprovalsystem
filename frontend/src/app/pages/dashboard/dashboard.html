@@ -1,5 +1,6 @@
 <mat-toolbar color="primary">
-  <span>Credit Card Portal</span>
+  <mat-icon class="logo-icon">credit_card</mat-icon>
+  <span class="brand">Credit Card Portal</span>
   <span class="spacer"></span>
   <button mat-button routerLink="/dashboard">Dashboard</button>
   <button mat-button routerLink="/apply">Apply</button>
@@ -9,21 +10,46 @@
 
 <div class="container">
   <h1>Welcome, {{ authService.currentUser()?.full_name || '...' }}</h1>
+  <p class="subtitle">Here's an overview of your credit card applications</p>
 
-  <div class="stats-row">
-    <mat-card class="stat-card">
+  <div class="stats-grid">
+    <mat-card class="stat-card total">
       <mat-card-content>
+        <mat-icon>description</mat-icon>
+        <p class="stat-value">{{ totalCount() }}</p>
         <p class="stat-label">Total Applications</p>
-        <p class="stat-value">{{ applications().length }}</p>
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card">
+    <mat-card class="stat-card approved">
       <mat-card-content>
-        <p class="stat-label">Latest Status</p>
-        <p class="stat-value">{{ latestStatus() }}</p>
+        <mat-icon>check_circle</mat-icon>
+        <p class="stat-value">{{ approvedCount() }}</p>
+        <p class="stat-label">Approved</p>
       </mat-card-content>
     </mat-card>
+
+    <mat-card class="stat-card rejected">
+      <mat-card-content>
+        <mat-icon>cancel</mat-icon>
+        <p class="stat-value">{{ rejectedCount() }}</p>
+        <p class="stat-label">Rejected</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card pending">
+      <mat-card-content>
+        <mat-icon>hourglass_empty</mat-icon>
+        <p class="stat-value">{{ pendingCount() }}</p>
+        <p class="stat-label">Under Review</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="cta-row">
+    <button mat-flat-button color="primary" routerLink="/apply">
+      <mat-icon>add</mat-icon> Apply for a New Card
+    </button>
   </div>
 
   <h2>Recent Applications</h2>
@@ -33,9 +59,16 @@
     <p>No applications yet. <a routerLink="/apply">Apply for a card</a> to get started.</p>
   } @else {
     @for (app of recentApplications(); track app.id) {
-      <mat-card class="app-row">
-        <mat-card-content>
-          <strong>{{ app.card_type }}</strong> — {{ app.status }} — {{ app.created_at | date:'medium' }}
+      <mat-card class="app-row" [routerLink]="['/applications', app.id]">
+        <mat-card-content class="app-row-content">
+          <div class="app-row-left">
+            <mat-icon [class]="'card-icon ' + app.card_type.toLowerCase()">credit_card</mat-icon>
+            <div>
+              <strong>{{ app.card_type }}</strong>
+              <p class="sub">{{ app.created_at | date:'medium' }}</p>
+            </div>
+          </div>
+          <span class="status" [class]="app.status.toLowerCase()">{{ app.status }}</span>
         </mat-card-content>
       </mat-card>
     }

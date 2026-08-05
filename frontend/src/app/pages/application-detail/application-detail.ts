@@ -7,10 +7,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ApplicationService } from '../../services/application.service';
 import { AuthService } from '../../services/auth.service';
 import { Application } from '../../models/application.model';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-application-detail',
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatToolbarModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatToolbarModule,MatIconModule],
   templateUrl: './application-detail.html',
   styleUrl: './application-detail.scss',
 })
