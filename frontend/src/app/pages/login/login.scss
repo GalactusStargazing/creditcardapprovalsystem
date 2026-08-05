@@ -1,14 +1,35 @@
-.auth-container {
+.page {
   display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  padding: 16px;
 }
 
-.auth-card {
+.left-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.form-wrapper {
   width: 100%;
-  max-width: 420px;
+  max-width: 380px;
+}
+
+.logo {
+  width: 220px;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  color: #666;
+  margin: 0 0 24px;
 }
 
 .full-width {
@@ -23,5 +44,70 @@
 
 .switch-link {
   text-align: center;
-  margin-top: 8px;
+  margin-top: 16px;
+}
+
+.right-panel {
+  flex: 1;
+  background: linear-gradient(160deg, #0c447c, #185fa5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.right-content {
+  max-width: 480px;
+}
+
+.right-content h2 {
+  font-size: 1.8rem;
+  margin: 0 0 12px;
+}
+
+.right-content p {
+  opacity: 0.9;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.card-showcase {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tier-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.tier-name {
+  font-weight: 600;
+}
+
+.tier-detail {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+@media (max-width: 800px) {
+  .page {
+    flex-direction: column;
+  }
+  .right-panel {
+    order: -1;
+    padding: 24px;
+  }
 }

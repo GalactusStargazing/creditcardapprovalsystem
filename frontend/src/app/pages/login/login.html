@@ -1,9 +1,11 @@
-<div class="auth-container">
-  <mat-card class="auth-card">
-    <mat-card-header>
-      <mat-card-title>Log In</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
+<div class="page">
+  <div class="left-panel">
+    <div class="form-wrapper">
+      <img src="images/logo.png" alt="Cloud Commanders" class="logo" />
+
+      <h1>Welcome back</h1>
+      <p class="subtitle">Log in to manage your credit card applications</p>
+
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
@@ -24,6 +26,24 @@
         </button>
       </form>
       <p class="switch-link">Don't have an account? <a routerLink="/register">Register</a></p>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="right-content">
+      <h2>Three cards. One command.</h2>
+      <p>Choose the Cloud Commanders card that fits your lifestyle — from everyday essentials to premium travel rewards.</p>
+
+      <img src="images/card-types.png" alt="Platinum, Gold, and Silver cards" class="card-showcase" />
+
+      <div class="tier-list">
+        @for (tier of cardTiers; track tier.name) {
+          <div class="tier-row">
+            <span class="tier-name">{{ tier.name }}</span>
+            <span class="tier-detail">{{ tier.fee }} · {{ tier.limit }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
 </div>

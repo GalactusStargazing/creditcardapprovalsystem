@@ -5,7 +5,6 @@ import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -17,7 +16,6 @@ import { AuthService } from '../../services/auth.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatCardModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -26,6 +24,12 @@ export class Login {
   errorMessage = signal('');
   loading = signal(false);
   form: ReturnType<FormBuilder['group']>;
+
+  cardTiers = [
+    { name: 'Platinum', fee: '₹3,000/year', limit: 'Up to ₹10,00,000' },
+    { name: 'Gold', fee: '₹1,500/year', limit: 'Up to ₹3,00,000' },
+    { name: 'Silver', fee: '₹500/year', limit: 'Up to ₹1,00,000' },
+  ];
 
   constructor(
     private fb: FormBuilder,
