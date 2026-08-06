@@ -1,6 +1,16 @@
-# ============================================================
-# Stage 1: Install dependencies
-# ============================================================
+# =============================================================================
+# APPLICATION SERVICE - Dockerfile
+# =============================================================================
+# This builds a container image for the Application Service (FastAPI +
+# PostgreSQL). Same multi-stage pattern as Auth Service - see that file's
+# comments for the full explanation of WHY each step exists. This file
+# repeats the pattern, just for a different service and port (8002).
+# =============================================================================
+
+
+# =============================================================================
+# STAGE 1: "deps" - temporary stage, only used to install Python packages
+# =============================================================================
 FROM python:3.12-slim AS deps
 
 WORKDIR /app
@@ -13,9 +23,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ============================================================
-# Stage 2: Runtime image
-# ============================================================
+
+# =============================================================================
+# STAGE 2: "runner" - this becomes the ACTUAL final image
+# =============================================================================
 FROM python:3.12-slim AS runner
 
 WORKDIR /app
@@ -24,24 +35,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy the already-installed Python packages from Stage 1.
 COPY --from=deps /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=deps /usr/local/bin /usr/local/bin
 
+# Create a dedicated non-root user to run the app (security best practice).
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
+# Copy application code (specific folders only - not venv/, tests/, .env).
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini .
+
+# Copy and prepare the startup script (runs migrations, then starts uvicorn).
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 RUN chown -R appuser:appuser /app
 USER appuser
 
+# Application Service listens on 8002 (Auth uses 8001, Decision uses 8003).
 EXPOSE 8002
 
+# Periodic check: is this service actually responding?
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]
+# The ONE main command: runs entrypoint.sh (migrate, then start uvicorn).
 CMD ["./entrypoint.sh"]
