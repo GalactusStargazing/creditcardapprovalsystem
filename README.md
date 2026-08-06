@@ -54,6 +54,76 @@ credit-card-approval-system/
 ├── credit-decision-service/ # same structure as auth-service
 └── frontend/ # Angular app
 
+## Quick Start with Docker (Recommended)
+
+The fastest way to run the entire system — no Python, Node, or PostgreSQL installation required.
+
+### Prerequisites
+- Docker and Docker Compose installed ([Get Docker](https://docs.docker.com/get-docker/))
+
+### Run everything with one command
+
+```bash
+git clone <this-repo-url>
+cd credit-card-approval-system
+cp .env.example .env
+```
+
+Edit `.env` and set:
+- `POSTGRES_PASSWORD` — any strong password
+- `JWT_SECRET_KEY` — generate one with:
+```bash
+  python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Then start everything:
+
+```bash
+docker compose up -d --build
+```
+
+This builds all 4 service images and starts Postgres + Auth Service + Application Service + Credit Decision Service + Angular frontend, wired together on a shared Docker network.
+
+### Verify it's running
+
+```bash
+docker compose ps
+```
+
+All 5 containers should show `healthy` within about a minute. Then open:
+
+http://localhost:4200
+
+### Stopping
+
+```bash
+docker compose down          # stops containers, keeps data
+docker compose down -v       # stops containers AND deletes all data
+```
+
+### Rebuilding after code changes
+
+```bash
+docker compose up -d --build
+```
+
+### Viewing logs
+
+```bash
+docker compose logs -f                      # all services
+docker compose logs -f application-service  # just one service
+```
+
+### Architecture note
+
+Database migrations run automatically on container startup (via each service's `entrypoint.sh`) — no manual `alembic upgrade head` step needed. Services communicate over Docker's internal network using service names (`auth-service`, `application-service`, `decision-service`, `db`), never hardcoded IPs or `localhost`.
+
+---
+
+## Manual Local Development Setup (without Docker)
+
+The instructions below are for running each service individually with Python venvs and a locally-installed PostgreSQL — useful for active backend development and debugging with hot-reload.
+
 ## Prerequisites
 
 - Python 3.12+
@@ -163,8 +233,8 @@ Score ≥ 80 → **APPROVED**, otherwise **REJECTED**.
 
 ## Roadmap
 
-- [ ] Dockerize each service
-- [ ] Docker Compose for local orchestration
+- [x] Dockerize each service
+- [x] Docker Compose for local orchestration
 - [ ] Kubernetes deployment
 - [ ] AWS EC2 hosting
 - [ ] Monitoring with Prometheus + Grafana
