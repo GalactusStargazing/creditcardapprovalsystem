@@ -15,3 +15,4 @@ frontend/.angular/
 auth-service/.env.test
 application-service/.env.test
 credit-decision-service/.env.test
+.env

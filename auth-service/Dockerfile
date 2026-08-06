@@ -34,6 +34,8 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 RUN chown -R appuser:appuser /app
 USER appuser
@@ -44,3 +46,4 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["./entrypoint.sh"]
