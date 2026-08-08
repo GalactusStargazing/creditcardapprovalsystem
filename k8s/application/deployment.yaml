@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application
+  labels:
+    app: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: application
+  template:
+    metadata:
+      labels:
+        app: application
+    spec:
+      containers:
+        - name: application
+          image: pranjal261/credit-card-application-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+          env:
+            - name: DATABASE_URL
+              value: "postgresql+asyncpg://ccapp:YOUR_REAL_PASSWORD@postgres:5432/application_db"
+            - name: JWT_SECRET_KEY
+              value: "YOUR_REAL_SHARED_SECRET"
+            - name: JWT_ALGORITHM
+              value: "HS256"
+            - name: CREDIT_DECISION_SERVICE_URL
+              value: "http://decision:8003"
+            - name: PORT
+              value: "8002"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
