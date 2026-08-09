@@ -10,6 +10,3 @@ data:
       CREATE DATABASE application_db;
       CREATE DATABASE decision_db;
       CREATE DATABASE auth_db;
-      
-     
-    
