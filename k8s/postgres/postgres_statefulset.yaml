@@ -1,69 +1,48 @@
 apiVersion: apps/v1
 kind: StatefulSet
-
 metadata:
   name: postgres
   namespace: credit-card-app
   labels:
     app: postgres
-
 spec:
-  serviceName: postgres
   replicas: 1 
-
   selector:
     matchLabels:
       app: postgres
-
   template:
     metadata:
     labels:
       app: postgres
-
     spec:
       containers:
         - name: postgres
           image: postgres16
           imagePullPolicy: IfNotPresent 
-
           ports:
             - containerPort: 5432
               name: postgres
-
           env:
-            - name: POSTGRES_DB
-              
-              value: credit_card_db
-
             - name: POSTGRES_USER
               valueFrom:
               configMapKeyRef:
               name: postgres-config
               key: POSTGRES_USER
-              value: postgres
-
             - name: POSTGRES_PASSWORD
               valueFrom:
               secretKeyRef:
               name: postgres-secret
               key: POSTGRES_PASSWORD
-              value: postgres
-
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
             
             - name: postgres-init
               mountPath: docker-entrypoint-initdb.d
-
-  volumeClaimTemplates:
-    - metadata:
-      name: postgres-data 
-
-      spec: 
-        accesModes:
-          - ReadWriteOnce
-
-        resources:
-          requests:
-            storage: 5Gi
+      volumes:
+        - name: postgres-init
+          configMap:
+            name: postgres-init
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc    
