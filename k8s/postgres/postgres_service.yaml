@@ -6,7 +6,7 @@ metadata:
   labels:
     app: postgres
 spec:
-  clusterIP: None
+  type: clusterIP
   selector:
     app: postgres
   ports:
