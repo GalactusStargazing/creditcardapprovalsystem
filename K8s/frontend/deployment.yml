@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: pranjal261/credit-card-frontend:latest
+          image: pranjal261/credit-card-frontend:latest1
           imagePullPolicy: IfNotPresent
 
           ports:
