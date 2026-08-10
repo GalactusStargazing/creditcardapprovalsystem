@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  namespace: credit-card-app
+  name: frontend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLables:
+      app: frontend
+
+  template:
+    metadata:
+      name: frontend
+      label:
+        app: frontend
+
+    spec:
+      containers:
+        - name: frontend
+          image: pranjal261/credit-card-frontend:latest1
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 80
+
+          resources:         
+            request:
+              cpu: "100m"
+              memory: "128Mi"
+
+            limit:
+              cpu: "200m"
+              memory: "256Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
+
+            
