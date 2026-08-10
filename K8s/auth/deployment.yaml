@@ -1,0 +1,75 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authservice
+  namespace: credit-card-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authservice
+  template:
+    metadata:
+      labels:
+        app: authservice
+    spec:
+      containers:
+        - name: authservice
+          image: pranjal261/credit-card-auth-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+
+
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: credit-card-secrets
+                  key: AUTH_DATABASE_URL
+
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: credit-card-secrets
+                  key: JWT_SECRET_KEY
+
+            - name: JWT_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: credit-card-config
+                  key: JWT_ALGORITHM
+
+            - name: JWT_EXPIRE_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: credit-card-config
+                  key: JWT_EXPIRE_MINUTES
+
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: credit-card-config
+                  key: AUTH_PORT
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
