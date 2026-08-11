@@ -16,3 +16,6 @@ auth-service/.env.test
 application-service/.env.test
 credit-decision-service/.env.test
 .env
+
+# Kubernetes secrets - never commit real values
+k8s/*/secret.yaml

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: postgres-config
   namespace: credit-card-app
-  labels:
-    app: postgres
 data:
+  POSTGRES_DB: auth_db
   POSTGRES_USER: ccapp
+
