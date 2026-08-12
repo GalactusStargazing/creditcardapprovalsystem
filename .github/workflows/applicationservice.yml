@@ -1,0 +1,85 @@
+name: Application Service CI/CD
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Install application-service dependencies
+      - name: Install dependencies
+        working-directory: ./application-service
+        run: |
+          pip install -r requirements.txt
+
+      # 4. Run tests
+      - name: Run tests
+        working-directory: ./application-service
+        run: |
+          pytest
+
+      # 5. Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 6. Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }} \
+            ./application-service
+
+      # 7. Push Docker image to Docker Hub
+      - name: Push Docker image
+        run: |
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }}
+
+      # 8. Setup SSH connection to EC2
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
+
+          chmod 600 ~/.ssh/ec2-key.pem
+
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # 9. Deploy using Helm
+      - name: Deploy application-service using Helm
+        run: |
+          ssh -i ~/.ssh/ec2-key.pem \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "helm upgrade --install applicationservice ~/helm/applicationservice \
+            --namespace credit-card-app \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service \
+            --set image.tag=${{ github.sha }} \
+            --set image.pullPolicy=Always"
+
+      # 10. Check Kubernetes rollout
+      - name: Check rollout status
+        run: |
+          ssh -i ~/.ssh/ec2-key.pem \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "kubectl rollout status deployment/application \
+            -n credit-card-app"
