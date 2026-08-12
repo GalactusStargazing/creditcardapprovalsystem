@@ -3,10 +3,13 @@ kind: Service
 metadata:
   name: frontend
   namespace: credit-card-app
+  labels:
+    app: frontend
 spec:
   selector:
     app: frontend
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 80
   type: ClusterIP

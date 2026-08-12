@@ -3,10 +3,13 @@ kind: Service
 metadata:
   name: auth
   namespace: credit-card-app
+  labels:
+    app: auth
 spec:
   selector:
     app: auth
   ports:
-    - port: 8001
+    - name: http
+      port: 8001
       targetPort: 8001
   type: ClusterIP
