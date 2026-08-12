@@ -74,7 +74,7 @@ jobs:
             --namespace credit-card-app \
             --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service \
             --set image.tag=${{ github.sha }} \
-            --set image.pullPolicy=Always"
+            --set image.pullPolicy=IfNotPresent"
 
       # 10. Check Kubernetes rollout
       - name: Check rollout status
