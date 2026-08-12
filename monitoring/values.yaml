@@ -6,6 +6,9 @@ grafana:
   adminPassword: cloud_commanders
   service:
     type: ClusterIP
+  serviceMonitor:
+    enabled: true
+    path: /grafana/metrics
 prometheus:
   prometheusSpec:
     resources:
