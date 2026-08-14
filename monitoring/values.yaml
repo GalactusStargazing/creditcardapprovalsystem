@@ -3,7 +3,10 @@ grafana:
     server:
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
       serve_from_sub_path: true
-  adminPassword: cloud_commanders
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
   service:
     type: ClusterIP
   serviceMonitor:
@@ -11,6 +14,8 @@ grafana:
     path: /grafana/metrics
 prometheus:
   prometheusSpec:
+    routePrefix: /prometheus
+    externalUrl: /prometheus
     resources:
       requests:
         cpu: 200m

@@ -19,3 +19,4 @@ credit-decision-service/.env.test
 
 # Kubernetes secrets - never commit real values
 k8s/*/secret.yaml
+monitoring/grafana-admin-secret.yaml

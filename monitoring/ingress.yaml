@@ -15,3 +15,10 @@ spec:
                 name: monitoring-grafana
                 port:
                   number: 80
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-kube-prometheus-prometheus
+                port:
+                  number: 9090
