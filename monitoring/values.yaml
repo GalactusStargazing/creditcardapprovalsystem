@@ -11,6 +11,8 @@ grafana:
     path: /grafana/metrics
 prometheus:
   prometheusSpec:
+    routePrefix: /prometheus
+    externalUrl: http://13.235.105.203/prometheus
     resources:
       requests:
         cpu: 200m
