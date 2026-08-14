@@ -1,4 +1,7 @@
 grafana:
+  persistence:
+    enabled: true
+    size: 100Mi
   grafana.ini:
     server:
       root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
