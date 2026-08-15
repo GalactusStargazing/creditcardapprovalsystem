@@ -1,1 +1,86 @@
+name: Decision Service CI/CD
 
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'credit-decision-service/**'
+
+jobs:
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        working-directory: ./credit-decision-service
+        run: |
+          pip install -r requirements.txt
+
+      # 4. Run tests
+      # - name: Run tests
+      #   working-directory: ./credit-decision-service
+      #   run: |
+      #     pytest
+
+      # 5. Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 6. Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha }} \
+            ./credit-decision-service
+
+      # 7. Push Docker image
+      - name: Push Docker image
+        run: |
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha }}
+
+      # 8. Setup SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
+          chmod 600 ~/.ssh/ec2-key.pem
+
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # 9. Deploy Decision Service using Helm
+      - name: Deploy decision-service using Helm
+        run: |
+          ssh -i ~/.ssh/ec2-key.pem \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "helm upgrade --install decision ~/helm/decision \
+            --namespace credit-card-app \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service \
+            --set image.tag=${{ github.sha }} \
+            --set image.pullPolicy=IfNotPresent"
+
+      # 10. Check Kubernetes rollout
+      - name: Check rollout status
+        run: |
+          ssh -i ~/.ssh/ec2-key.pem \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
+            "kubectl rollout status deployment/decision \
+            -n credit-card-app"
