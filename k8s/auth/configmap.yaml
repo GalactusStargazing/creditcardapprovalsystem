@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+  namespace: credit-card-app
+data:
+  JWT_ALGORITHM: HS256
+  JWT_EXPIRE_MINUTES: "60"
+  PORT: "8001"

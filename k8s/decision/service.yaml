@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: decision
+  namespace: credit-card-app
+  labels:
+    app: decision
+spec:
+  selector:
+    app: decision
+  ports:
+    - name: http
+      port: 8003
+      targetPort: 8003
+  type: ClusterIP

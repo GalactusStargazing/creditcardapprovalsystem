@@ -1,0 +1,42 @@
+grafana:
+  persistence:
+    enabled: true
+    size: 100Mi
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana"
+      serve_from_sub_path: true
+  admin:
+    existingSecret: grafana-admin-secret
+    userKey: admin-user
+    passwordKey: admin-password
+  service:
+    type: ClusterIP
+  serviceMonitor:
+    enabled: true
+    path: /grafana/metrics
+prometheus:
+  prometheusSpec:
+    routePrefix: /prometheus
+    externalUrl: /prometheus
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    retention: 3d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorNamespaceSelector: {}
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi

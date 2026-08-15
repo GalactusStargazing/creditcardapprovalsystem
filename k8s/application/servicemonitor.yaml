@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: application-service-monitor
+  namespace: credit-card-app
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: application
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
