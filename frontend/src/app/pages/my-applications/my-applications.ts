@@ -15,7 +15,7 @@ import { ApplicationListItem } from '../../models/application.model';
   templateUrl: './my-applications.html',
   styleUrl: './my-applications.scss',
 })
-export class MyApplications implements OnInit {
+export class MyApplicationsComponent implements OnInit {
   applications = signal<ApplicationListItem[]>([]);
   loading = signal(true);
 

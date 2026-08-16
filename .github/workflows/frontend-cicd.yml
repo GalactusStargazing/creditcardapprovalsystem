@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - "frontend/*"
+      - "frontend/**"
 
 jobs:
   build-and-deploy:
@@ -34,10 +34,10 @@ jobs:
         working-directory: ./frontend
         run: npm run build
 
-      # # 5. Run frontend tests
-      # - name: Run tests
-      #   working-directory: ./frontend
-      #   run: npm test -- --watch=false
+      # 5. Run Linting
+      - name: Run Lint
+        working-directory: ./frontend
+        run: npm run lint
 
       # 6. Login to Docker Hub
       - name: Login to Docker Hub
