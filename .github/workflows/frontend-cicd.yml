@@ -5,7 +5,7 @@ on:
     branches:
       - feature/add-lint
     paths:
-      - "frontend/*"
+      - "frontend/**"
 
 jobs:
   build-and-deploy:
