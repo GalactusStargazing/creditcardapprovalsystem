@@ -29,6 +29,10 @@
             "prefix": "app",
             "style": "kebab-case"
           }
+        ],
+        "eol-last": [
+          "error",
+          "always"
         ]
       }
     },
