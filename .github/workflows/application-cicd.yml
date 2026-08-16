@@ -72,7 +72,7 @@ jobs:
             --set image.tag=${{ github.sha }} \
             --set image.pullPolicy=IfNotPresent"
 
-      # 11. Check Kubernetes rollout
+      # 9. Check Kubernetes rollout
       - name: Check rollout status
         run: |
           ssh -i ~/.ssh/ec2-key.pem \
