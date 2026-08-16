@@ -15,7 +15,7 @@ import { ApplicationListItem } from '../../models/application.model';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard implements OnInit {
+export class DashboardComponent implements OnInit {
   applications = signal<ApplicationListItem[]>([]);
   loading = signal(true);
 

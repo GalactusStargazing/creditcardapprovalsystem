@@ -22,7 +22,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register {
+export class RegisterComponent {
   errorMessage = signal('');
   successMessage = signal('');
   loading = signal(false);
