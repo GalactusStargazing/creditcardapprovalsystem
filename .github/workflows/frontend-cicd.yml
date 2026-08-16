@@ -3,7 +3,7 @@ name: Frontend Service CI/CD
 on:
   push:
     branches:
-      - feature/add-lint
+      - develop
     paths:
       - "frontend/**"
 
