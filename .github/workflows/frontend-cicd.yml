@@ -37,7 +37,7 @@ jobs:
       # 5. Run Linting
       - name: Run Lint
         working-directory: ./frontend
-        run: ng lint -- --watch=false
+        run: npm run lint -- --watch=false
 
       # 6. Login to Docker Hub
       - name: Login to Docker Hub
