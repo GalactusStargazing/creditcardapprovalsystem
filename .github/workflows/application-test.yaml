@@ -7,6 +7,12 @@ on:
     paths:
       - 'application-service/**'
 
+ env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+     
+
 jobs:
 
   build-and-deploy:
@@ -69,8 +75,8 @@ jobs:
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --region ap-south-1 \
-            --name credit-card-eks
+             --region $AWS_REGION \
+            --name $EKS_CLUSTER_NAME
 
       # 12. Verify EKS connection
       - name: Verify EKS connection
