@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-down-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: pod-health
+      rules:
+        - alert: PodDown
+          expr: |
+            up{namespace="credit-card-app"} == 0
+            or
+            absent(up{namespace="credit-card-app", job="auth"})
+            or
+            absent(up{namespace="credit-card-app", job="application"})
+            or
+            absent(up{namespace="credit-card-app", job="decision"})
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "A credit-card-app service may be down"
+            description: "A service in credit-card-app is either reporting unhealthy or has completely disappeared from Prometheus's targets for more than 2 minutes."
