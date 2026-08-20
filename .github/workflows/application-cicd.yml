@@ -3,9 +3,9 @@ name: Application Service CI/CD
 on:
   push:
     branches:
-      - develop
-    paths:
-      - 'application-service/**'
+    #   - develop
+    # paths:
+    #   - 'application-service'
 
 jobs:
 
