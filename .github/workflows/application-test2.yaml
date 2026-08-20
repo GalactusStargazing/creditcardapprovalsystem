@@ -83,7 +83,7 @@ jobs:
         run: |
           kubectl get nodes
 
-          echo "--------------------------------"
+          echo "------------------------------"
 
           kubectl get pods \
             -n $K8S_NAMESPACE
