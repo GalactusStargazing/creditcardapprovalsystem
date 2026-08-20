@@ -109,7 +109,7 @@ jobs:
             $K8S_DEPLOYMENT \
             -n $K8S_NAMESPACE
 
-          echo "--------------------------------"
+          echo "-------------------------------"
 
           echo "Pods:"
           kubectl get pods \
