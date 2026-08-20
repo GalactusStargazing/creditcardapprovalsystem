@@ -7,6 +7,12 @@ on:
     paths:
       - 'application-service/**'
 
+ env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+     
+
 jobs:
 
   build-and-deploy:
@@ -69,7 +75,7 @@ jobs:
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --region $AWS_REGION \
+             --region $AWS_REGION \
             --name $EKS_CLUSTER_NAME
 
       # 12. Verify EKS connection
@@ -77,45 +83,45 @@ jobs:
         run: |
           kubectl get nodes
 
-          echo "--------------------------------"
+      #     echo "--------------------------------"
 
-          kubectl get pods \
-            -n $K8S_NAMESPACE
-
-
-      # 13. Update frontend image
-      - name: Update frontend deployment
-        run: |
-          kubectl set image deployment/$K8S_DEPLOYMENT \
-            $K8S_CONTAINER=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }} \
-            -n $K8S_NAMESPACE
+      #     kubectl get pods \
+      #       -n $K8S_NAMESPACE
 
 
-      # 14. Check rollout status
-      - name: Check rollout status
-        run: |
-          kubectl rollout status \
-            deployment/$K8S_DEPLOYMENT \
-            -n $K8S_NAMESPACE \
-            --timeout=5m
+      # # 13. Update frontend image
+      # - name: Update frontend deployment
+      #   run: |
+      #     kubectl set image deployment/$K8S_DEPLOYMENT \
+      #       $K8S_CONTAINER=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }} \
+      #       -n $K8S_NAMESPACE
 
 
-      # 15. Show final deployment status
-      - name: Show deployment status
-        run: |
-          echo "Deployment:"
-          kubectl get deployment \
-            $K8S_DEPLOYMENT \
-            -n $K8S_NAMESPACE
+      # # 14. Check rollout status
+      # - name: Check rollout status
+      #   run: |
+      #     kubectl rollout status \
+      #       deployment/$K8S_DEPLOYMENT \
+      #       -n $K8S_NAMESPACE \
+      #       --timeout=5m
 
-          echo "-------------------------------"
 
-          echo "Pods:"
-          kubectl get pods \
-            -n $K8S_NAMESPACE
+      # # 15. Show final deployment status
+      # - name: Show deployment status
+      #   run: |
+      #     echo "Deployment:"
+      #     kubectl get deployment \
+      #       $K8S_DEPLOYMENT \
+      #       -n $K8S_NAMESPACE
 
-          echo "--------------------------------"
+      #     echo "-------------------------------"
 
-          echo "Service:"
-          kubectl get svc \
-            -n $K8S_NAMESPACE
+      #     echo "Pods:"
+      #     kubectl get pods \
+      #       -n $K8S_NAMESPACE
+
+      #     echo "--------------------------------"
+
+      #     echo "Service:"
+      #     kubectl get svc \
+      #       -n $K8S_NAMESPACE
