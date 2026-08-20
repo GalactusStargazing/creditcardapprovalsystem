@@ -20,7 +20,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class LoginComponent {
   errorMessage = signal('');
   loading = signal(false);
   form: ReturnType<FormBuilder['group']>;

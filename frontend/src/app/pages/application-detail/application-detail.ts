@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './application-detail.html',
   styleUrl: './application-detail.scss',
 })
-export class ApplicationDetail implements OnInit {
+export class ApplicationDetailComponent implements OnInit {
   application = signal<Application | null>(null);
   loading = signal(true);
   errorMessage = signal('');

@@ -29,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './apply.html',
   styleUrl: './apply.scss',
 })
-export class Apply {
+export class ApplyComponent {
   errorMessage = signal('');
   loading = signal(false);
 
