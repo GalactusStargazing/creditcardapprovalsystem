@@ -15,8 +15,8 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ccapp
-          POSTGRES_PASSWORD: change_me_strong_password
+          POSTGRES_USER: ${{ secrets.DB_USERNAME}}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD}}
           POSTGRES_DB: test_auth_db
         ports:
           -  5432:5432

@@ -22,6 +22,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: decision-config
+            - secretRef:
+                name: decision-secret
           resources:
             requests:
               memory: "128Mi"

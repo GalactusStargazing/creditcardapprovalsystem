@@ -48,6 +48,7 @@ spec:
         name: postgres-storage
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: gp3
         resources:
           requests:
-            storage: 2Gi
+            storage: 3Gi
