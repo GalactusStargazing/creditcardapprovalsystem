@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: high-error-rate-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: error-rates
+      rules:
+        - alert: HighErrorRate
+          expr: |
+            sum(rate(http_requests_total{namespace="credit-card-app", status=~"5.."}[5m])) by (job)
+            /
+            sum(rate(http_requests_total{namespace="credit-card-app"}[5m])) by (job)
+            > 0.05
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.job }} has an elevated error rate"
+            description: "{{ $labels.job }} is returning 5xx responses for more than 5% of requests over the last 5 minutes."

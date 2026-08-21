@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: restart-frequency-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: restart-frequency
+      rules:
+        - alert: FrequentRestarts
+          expr: increase(kube_pod_container_status_restarts_total{namespace="credit-card-app"}[15m]) > 3
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.pod }} is restarting frequently"
+            description: "{{ $labels.pod }} has restarted more than 3 times in the last 15 minutes."
