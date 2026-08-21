@@ -51,13 +51,26 @@ jobs:
             -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }} \
             ./application-service
 
-      # 6. Push Docker image to Docker Hub
+       # ============================================================
+      # 6. Scan Docker image with Trivy
+      # ============================================================
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'HIGH,CRITICAL'
+
+
+      # 7. Push Docker image ONLY if Trivy scan passes
       - name: Push Docker image
         run: |
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }}
 
-      # 7. Configure AWS credentials
+      # 8. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -65,32 +78,32 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 8. Verify AWS identity
+      # 9. Verify AWS identity
       - name: Verify AWS identity
         run: |
           aws sts get-caller-identity
 
-      # 9. Configure kubectl for EKS
+      # 10. Configure kubectl for EKS
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
             --region ${{ env.AWS_REGION }} \
             --name ${{ env.EKS_CLUSTER_NAME }}
 
-      # 10. Verify EKS connection
+      # 11. Verify EKS connection
       - name: Verify EKS connection
         run: |
           kubectl get nodes
           kubectl get pods -n ${{ env.K8S_NAMESPACE }}
 
-      # 11. Deploy Application service
+      # 12. Deploy Application service
       - name: Deploy Application service
         run: |
           kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
             ${{ env.K8S_CONTAINER }}=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }} \
             -n ${{ env.K8S_NAMESPACE }}
 
-      # 12. Check Application rollout
+      # 13. Check Application rollout
       - name: Check Application rollout
         run: |
           kubectl rollout status \
@@ -98,7 +111,7 @@ jobs:
             -n ${{ env.K8S_NAMESPACE }} \
             --timeout=5m
 
-      # 13. Show final deployment status
+      # 14. Show final deployment status
       - name: Show deployment status
         run: |
           echo "Deployment:"
