@@ -14,8 +14,8 @@ permissions:
 
 jobs:
   gitleaks:
-  name: Gitleaks secret scan
-  runs-on: ubuntu-latest
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
 
   steps:
     
