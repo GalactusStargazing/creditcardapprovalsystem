@@ -1,17 +1,21 @@
 name: Decision Service CI/CD
-
 on:
   push:
     branches:
-      - develop
+      - eks_test
     paths:
-      - 'credit-decision-service/**'
+      - "credit-decision-service/**"
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+  K8S_DEPLOYMENT: decision
+  K8S_CONTAINER: decision
 
 jobs:
-
   build-and-deploy:
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:16
@@ -26,76 +30,78 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-
-      # 1. Checkout repository
-      - name: Checkout code
+      # 1. Checkout the repository
+      - name: checkout code
         uses: actions/checkout@v4
-
       # 2. Set up Python
-      - name: Set up Python
+      - name: setup python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      # 3. Install dependencies
-      - name: Install dependencies
+      # 3. Install decision-service dependencies
+      - name: install dependencies
         working-directory: ./credit-decision-service
         run: |
           pip install -r requirements.txt
-
       # 4. Run tests
-      - name: Run tests
+      - name: run test
         working-directory: ./credit-decision-service
         run: |
           pytest
-
-      # 5. Login to Docker Hub
+      # 5. Build Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha}} ./credit-decision-service
+      # 6. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # 6. Build Docker image
-      - name: Build Docker image
+      # 7. Push Docker image to Docker Hub
+      - name: Push to Docker Hub
         run: |
-          docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha }} \
-            ./credit-decision-service
-
-      # 7. Push Docker image
-      - name: Push Docker image
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha}}
+      # 8. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      # 9. Verify AWS identity
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+      # 10. Configure kubectl for EKS
+      - name: Update kubeconfig
         run: |
-          docker push \
-            ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha }}
-
-      # 8. Setup SSH
-      - name: Setup SSH
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
+      # 11. Verify EKS connection
+      - name: Verify EKS connection
         run: |
-          mkdir -p ~/.ssh
-
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
-          chmod 600 ~/.ssh/ec2-key.pem
-
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      # 9. Deploy Decision Service using Helm
-      - name: Deploy decision-service using Helm
+          kubectl get nodes
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+      # 12. Deploy Decision service
+      - name: Deploy Decision service
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "helm upgrade --install decision ~/helm/decision \
-            --namespace credit-card-app \
-            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service \
-            --set image.tag=${{ github.sha }} \
-            --set image.pullPolicy=IfNotPresent"
-
-      # 10. Check Kubernetes rollout
-      - name: Check rollout status
+          kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
+            ${{ env.K8S_CONTAINER }}=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-decision-service:${{ github.sha }} \
+            -n ${{ env.K8S_NAMESPACE }}
+      # 13. Check Decision rollout
+      - name: Check Decision rollout
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl rollout status deployment/decision \
-            -n credit-card-app"
+          kubectl rollout status \
+            deployment/${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+      # 14. Show final deployment status
+      - name: Show deployment status
+        run: |
+          echo "Deployment:"
+          kubectl get deployment ${{ env.K8S_DEPLOYMENT }} -n ${{ env.K8S_NAMESPACE }}
+          echo "-------------------------------"
+          echo "Pods:"
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
