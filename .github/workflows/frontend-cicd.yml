@@ -24,8 +24,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Gitleaks secret scan
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Set up Node.js
+      # 3 Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -34,28 +39,28 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
 
-      # 3. Install frontend dependencies
+      # 4. Install frontend dependencies
       - name: Install dependencies
         working-directory: ./frontend
         run: |
           npm ci
 
 
-      # 4. Build Angular frontend
+      # 5. Build Angular frontend
       - name: Build frontend
         working-directory: ./frontend
         run: |
           npm run build
 
 
-      # 5. Run Linting
+      # 6. Run Linting
       - name: Run Lint
         working-directory: ./frontend
         run: |
           npm run lint
 
 
-      # 6. Login to Docker Hub
+      # 7. Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -63,7 +68,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
-      # 7. Build Docker image
+      # 8. Build Docker image
       - name: Build Docker image
         run: |
           docker build --pull \
@@ -71,7 +76,7 @@ jobs:
             ./frontend
 
 
-      # 8. Scan Docker image with Trivy
+      # 9. Scan Docker image with Trivy
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -82,7 +87,7 @@ jobs:
           severity: 'HIGH,CRITICAL'
 
 
-      # 9. Push Docker image to Docker Hub
+      # 10. Push Docker image to Docker Hub
       # This runs ONLY if Trivy passes.
       - name: Push Docker image
         run: |
@@ -90,7 +95,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }}
 
 
-      # 10. Configure AWS credentials
+      # 11. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -99,13 +104,13 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
 
-      # 11. Verify AWS identity
+      # 12. Verify AWS identity
       - name: Verify AWS identity
         run: |
           aws sts get-caller-identity
 
 
-      # 12. Configure kubectl for EKS
+      # 13. Configure kubectl for EKS
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
@@ -113,14 +118,14 @@ jobs:
             --name ${{ env.EKS_CLUSTER_NAME }}
 
 
-      # 13. Verify EKS connection
+      # 14. Verify EKS connection
       - name: Verify EKS connection
         run: |
           kubectl get nodes
           kubectl get pods -n ${{ env.K8S_NAMESPACE }}
 
 
-      # 14. Update frontend image in Kubernetes
+      # 15. Update frontend image in Kubernetes
       - name: Update frontend deployment
         run: |
           kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
@@ -128,7 +133,7 @@ jobs:
             -n ${{ env.K8S_NAMESPACE }}
 
 
-      # 15. Check Kubernetes rollout
+      # 16. Check Kubernetes rollout
       - name: Check rollout status
         run: |
           kubectl rollout status \
@@ -137,7 +142,7 @@ jobs:
             --timeout=5m
 
 
-      # 16. Show final deployment status
+      # 17. Show final deployment status
       - name: Show deployment status
         run: |
           echo "Deployment:"
