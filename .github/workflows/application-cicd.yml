@@ -5,7 +5,14 @@ on:
     branches:
       - develop
     paths:
-      - 'application-service/**'
+      - "application-service/**"
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+  K8S_DEPLOYMENT: application
+  K8S_CONTAINER: application
 
 jobs:
 
@@ -22,7 +29,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       # 3. Install application-service dependencies
       - name: Install dependencies
@@ -50,32 +57,57 @@ jobs:
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }}
 
-      # 7. Setup SSH connection to EC2
-      - name: Setup SSH
+      # 7. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 8. Verify AWS identity
+      - name: Verify AWS identity
         run: |
-          mkdir -p ~/.ssh
+          aws sts get-caller-identity
 
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
-
-          chmod 600 ~/.ssh/ec2-key.pem
-
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      # 8. Deploy using Helm
-      - name: Deploy application-service using Helm
+      # 9. Configure kubectl for EKS
+      - name: Update kubeconfig
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "helm upgrade --install applicationservice ~/helm/applicationservice \
-            --namespace credit-card-app \
-            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service \
-            --set image.tag=${{ github.sha }} \
-            --set image.pullPolicy=IfNotPresent"
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
 
-      # 9. Check Kubernetes rollout
-      - name: Check rollout status
+      # 10. Verify EKS connection
+      - name: Verify EKS connection
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl rollout status deployment/application \
-            -n credit-card-app"
+          kubectl get nodes
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+
+      # 11. Deploy Application service
+      - name: Deploy Application service
+        run: |
+          kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
+            ${{ env.K8S_CONTAINER }}=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-application-service:${{ github.sha }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+      # 12. Check Application rollout
+      - name: Check Application rollout
+        run: |
+          kubectl rollout status \
+            deployment/${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+      # 13. Show final deployment status
+      - name: Show deployment status
+        run: |
+          echo "Deployment:"
+          kubectl get deployment \
+            ${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+          echo "-------------------------------"
+
+          echo "Pods:"
+          kubectl get pods \
+            -n ${{ env.K8S_NAMESPACE }}
