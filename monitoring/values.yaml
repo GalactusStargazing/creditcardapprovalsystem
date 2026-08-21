@@ -16,6 +16,7 @@ grafana:
   serviceMonitor:
     enabled: true
     path: /grafana/metrics
+
 prometheus:
   prometheusSpec:
     routePrefix: /prometheus
@@ -32,6 +33,7 @@ prometheus:
     serviceMonitorNamespaceSelector: {}
     podMonitorSelectorNilUsesHelmValues: false
     podMonitorNamespaceSelector: {}
+
 alertmanager:
   alertmanagerSpec:
     resources:
@@ -53,9 +55,27 @@ alertmanager:
         - receiver: 'null'
           matchers:
             - alertname = "Watchdog"
+        - receiver: 'null'
+          matchers:
+            - alertname = "InfoInhibitor"
     receivers:
       - name: 'null'
       - name: 'discord-relay'
         webhook_configs:
           - url: 'http://alertmanager-discord.monitoring.svc.cluster.local:9094'
             send_resolved: true
+
+prometheusOperator:
+  livenessProbe:
+    initialDelaySeconds: 30
+  readinessProbe:
+    initialDelaySeconds: 30
+
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
