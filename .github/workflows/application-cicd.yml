@@ -3,7 +3,7 @@ name: Application Service CI/CD
 on:
   push:
     branches:
-      - develop
+      - eks_test
     paths:
       - "application-service/**"
 
