@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from fastapi import APIRouter, Depends, status
 
@@ -11,6 +12,8 @@ from app.schemas.application import (
 )
 from app.services.application_service import ApplicationService
 
+logger = logging.getLogger("application-service")
+
 router = APIRouter(prefix="/api/v1/applications", tags=["applications"])
 
 
@@ -20,7 +23,9 @@ async def create_application(
     user_id: uuid.UUID = Depends(get_current_user_id),
     service: ApplicationService = Depends(get_application_service),
 ):
+    logger.info(f"Application creation requested: user_id={user_id}, card_type={data.card_type}")
     application = await service.create_application(user_id, data)
+    logger.info(f"Application created: application_id={application.id}, user_id={user_id}, status={application.status}")
     return application
 
 

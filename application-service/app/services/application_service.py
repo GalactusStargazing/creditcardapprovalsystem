@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from fastapi import HTTPException, status
 
@@ -8,6 +9,8 @@ from app.repositories.application_repository import ApplicationRepository
 from app.schemas.application import ApplicationCreateRequest
 from app.services.decision_client import DecisionServiceUnavailable, evaluate_application
 
+logger = logging.getLogger("application-service")
+
 
 class ApplicationService:
     def __init__(self, repo: ApplicationRepository):
@@ -16,40 +19,56 @@ class ApplicationService:
     async def create_application(
         self, user_id: uuid.UUID, data: ApplicationCreateRequest
     ) -> Application:
-        application_data = data.model_dump()
-        application_data["user_id"] = user_id
-        application_data["status"] = "SUBMITTED"
-
-        application = await self.repo.create(application_data)
-
-        # Move to UNDER_REVIEW before calling out to Credit Decision Service
-        application = await self.repo.update_status(application, "UNDER_REVIEW")
-
         try:
-            result = await evaluate_application(
-                application_id=application.id,
-                monthly_income=float(application.monthly_income),
-                credit_score=application.credit_score,
-                existing_loan_amount=float(application.existing_loan_amount),
-                occupation=application.occupation,
+            application_data = data.model_dump()
+            application_data["user_id"] = user_id
+            application_data["status"] = "SUBMITTED"
+
+            application = await self.repo.create(application_data)
+            logger.info(f"Application saved: application_id={application.id}, status=SUBMITTED")
+
+            # Move to UNDER_REVIEW before calling out to Credit Decision Service
+            application = await self.repo.update_status(application, "UNDER_REVIEW")
+            logger.info(f"Application status updated: application_id={application.id}, status=UNDER_REVIEW")
+
+            try:
+                logger.info(f"Calling decision-service: application_id={application.id}")
+                result = await evaluate_application(
+                    application_id=application.id,
+                    monthly_income=float(application.monthly_income),
+                    credit_score=application.credit_score,
+                    existing_loan_amount=float(application.existing_loan_amount),
+                    occupation=application.occupation,
+                )
+                logger.info(
+                    f"decision-service responded: application_id={application.id}, "
+                    f"decision={result['decision']}, score={result.get('score')}"
+                )
+            except DecisionServiceUnavailable:
+                logger.warning(f"decision-service unavailable: application_id={application.id}")
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=(
+                        "Credit decision service is currently unavailable. "
+                        "Your application has been saved and is under review."
+                    ),
+                )
+
+            decision = result["decision"]
+            card_number = generate_card_number() if decision == "APPROVED" else None
+
+            application = await self.repo.update_status(
+                application, decision, card_number=card_number
             )
-        except DecisionServiceUnavailable:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=(
-                    "Credit decision service is currently unavailable. "
-                    "Your application has been saved and is under review."
-                ),
-            )
+            logger.info(f"Application finalized: application_id={application.id}, final_status={decision}")
 
-        decision = result["decision"]
-        card_number = generate_card_number() if decision == "APPROVED" else None
+            return application
 
-        application = await self.repo.update_status(
-            application, decision, card_number=card_number
-        )
-
-        return application
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error creating application: user_id={user_id}, error={str(e)}", exc_info=True)
+            raise
 
     async def get_user_applications(self, user_id: uuid.UUID) -> list[Application]:
         return await self.repo.get_all_by_user(user_id)
