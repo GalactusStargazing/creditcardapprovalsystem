@@ -6,7 +6,7 @@ on:
       - eks_test
     paths:
       - "frontend/**"
-      - ".github/workflows/frontend-cicd.yml"
+      
 env:
   AWS_REGION: ap-south-1
   EKS_CLUSTER_NAME: credit-card-eks
