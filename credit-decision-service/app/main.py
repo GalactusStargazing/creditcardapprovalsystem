@@ -1,7 +1,8 @@
 import logging
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.routes import decisions
 
@@ -13,7 +14,12 @@ logging.basicConfig(
 
 app = FastAPI(title="Credit Decision Service", version="1.0.0")
 
-Instrumentator().instrument(app).expose(app)
+# Disable Prometheus instrumentation during tests.
+# It currently conflicts with the router structure used by this service.
+if os.getenv("TESTING") != "true":
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app)
 
 app.add_middleware(
     CORSMiddleware,

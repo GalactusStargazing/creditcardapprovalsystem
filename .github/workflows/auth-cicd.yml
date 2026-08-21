@@ -1,25 +1,33 @@
-name : Auth Service
+name: Auth Service CI/CD
 
 on:
   push:
     branches:
-      - develop
+      - eks_test
     paths:
-      -  "auth-service/*"
+      - "auth-service/**"
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+  K8S_DEPLOYMENT: auth
+  K8S_CONTAINER: auth
 
 jobs:
   build-and-deploy:
+
     runs-on: ubuntu-latest
 
     services:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ${{ secrets.DB_USERNAME}}
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD}}
+          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
           POSTGRES_DB: test_auth_db
         ports:
-          -  5432:5432
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,56 +35,165 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: checkout code
+
+      # ============================================================
+      # 1. Checkout repository
+      # ============================================================
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: setup python
+      # ============================================================
+      # 2. Gitleaks secret scan
+      # ============================================================
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # ============================================================
+      # 3. Setup Python
+      # ============================================================
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: install dependencies
+
+      # ============================================================
+      # 4. Install Auth Service dependencies
+      # ============================================================
+      - name: Install dependencies
         working-directory: ./auth-service
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: run test
+
+      # ============================================================
+      # 5. Run tests
+      # ============================================================
+      - name: Run tests
         working-directory: ./auth-service
         run: |
           pytest
 
-      - name: Build Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha}} ./auth-service
-          
+
+      # ============================================================
+      # 6. Login to Docker Hub
+      # ============================================================
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+
+      # ============================================================
+      # 7. Build Docker image
+      # ============================================================
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha }} \
+            ./auth-service
+
+
+      # ============================================================
+      # 8. Scan Docker image with Trivy
+      # ============================================================
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'HIGH,CRITICAL'
+
+
+      # ============================================================
+      # 9. Push Docker image to Docker Hub
+      # ============================================================
       - name: Push to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha}}
-          
-      #-------------------------------------------------------------------------  
-      
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
-          chmod 600 ~/.ssh/ec2-key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha }}
 
+
+      # ============================================================
+      # 10. Configure AWS credentials
+      # ============================================================
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+
+      # ============================================================
+      # 11. Verify AWS identity
+      # ============================================================
+      - name: Verify AWS identity
+        run: |
+          aws sts get-caller-identity
+
+
+      # ============================================================
+      # 12. Configure kubectl for EKS
+      # ============================================================
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
+
+
+      # ============================================================
+      # 13. Verify EKS connection
+      # ============================================================
+      - name: Verify EKS connection
+        run: |
+          kubectl get nodes
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+
+
+      # ============================================================
+      # 14. Deploy Auth Service
+      # ============================================================
       - name: Deploy Auth service
         run: |
-          ssh -i ~/.ssh/ec2-key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl set image deployment/auth \
-            auth=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha }} -n credit-card-app"
+          kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
+            ${{ env.K8S_CONTAINER }}=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-auth-service:${{ github.sha }} \
+            -n ${{ env.K8S_NAMESPACE }}
 
+
+      # ============================================================
+      # 15. Wait for rollout
+      # ============================================================
       - name: Check Auth rollout
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl rollout status deployment/auth \
-            -n credit-card-app"
+          kubectl rollout status \
+            deployment/${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+
+      # ============================================================
+      # 16. Show final deployment status
+      # ============================================================
+      - name: Show deployment status
+        run: |
+          echo "==============================="
+          echo "Deployment:"
+          kubectl get deployment \
+            ${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+          echo "==============================="
+          echo "Pods:"
+          kubectl get pods \
+            -n ${{ env.K8S_NAMESPACE }}
+
+          echo "==============================="
