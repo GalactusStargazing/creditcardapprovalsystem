@@ -55,6 +55,8 @@ jobs:
       # 4. Run tests
       - name: Run tests
         working-directory: ./credit-decision-service
+        env:
+          TESTING: "true"
         run: |
           pytest
 
