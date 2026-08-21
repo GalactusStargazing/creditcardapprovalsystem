@@ -16,7 +16,7 @@
 # =============================================================================
 # STAGE 1: "deps" - a temporary stage, only used to install Python packages
 # =============================================================================
-FROM python:3.12-slim AS deps
+FROM python:3.12-slim-bookworm AS deps
 # python:3.12-slim = a smaller version of the official Python image.
 # We use "slim" (not "alpine") because Alpine uses a different C library
 # (musl instead of glibc) that frequently breaks packages like asyncpg
@@ -46,7 +46,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # =============================================================================
 # STAGE 2: "runner" - this becomes the ACTUAL final image
 # =============================================================================
-FROM python:3.12-slim AS runner
+FROM python:3.12-slim-bookworm AS runner
 # Starting fresh from python:3.12-slim again - NONE of the gcc/libpq-dev
 # build tools from Stage 1 carry over. Only what we explicitly COPY below.
 
