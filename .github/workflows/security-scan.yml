@@ -17,16 +17,16 @@ jobs:
     name: Gitleaks secret scan
     runs-on: ubuntu-latest
 
-  steps:
+    steps:
     
-    # 1. Checkout the entire repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+       # 1. Checkout the entire repository
+        - name: Checkout repository
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
-      # 2. Scan repository for leaked secrets
-      - name: GitLeaks scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # 2. Scan repository for leaked secrets
+        - name: GitLeaks scan
+          uses: gitleaks/gitleaks-action@v2
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
