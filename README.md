@@ -230,7 +230,6 @@ Score ≥ 80 → **APPROVED**, otherwise **REJECTED**.
 - No message queue / async event-driven communication
 - Card number uniqueness relies on random generation without collision retry (acceptable at low volume)
 - No admin role/dashboard — all users are customers
-- Echo "git leaks testing"
 
 ## Roadmap
 
