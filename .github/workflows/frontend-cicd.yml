@@ -3,15 +3,23 @@ name: Frontend Service CI/CD
 on:
   push:
     branches:
-      - develop
+      - eks_test
     paths:
       - "frontend/**"
+
+env:
+  AWS_REGION: ap-south-1
+  EKS_CLUSTER_NAME: credit-card-eks
+  K8S_NAMESPACE: credit-card-app
+  K8S_DEPLOYMENT: frontend
+  K8S_CONTAINER: frontend
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+
       # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,24 +28,27 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       # 3. Install frontend dependencies
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          npm ci
 
       # 4. Build Angular frontend
       - name: Build frontend
         working-directory: ./frontend
-        run: npm run build
+        run: |
+          npm run build
 
       # 5. Run Linting
       - name: Run Lint
         working-directory: ./frontend
-        run: npm run lint
+        run: |
+          npm run lint
 
       # 6. Login to Docker Hub
       - name: Login to Docker Hub
@@ -59,27 +70,57 @@ jobs:
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }}
 
-      # 9. Setup SSH connection to EC2
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2-key.pem
-          chmod 600 ~/.ssh/ec2-key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      # 9. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-     # 10. Update frontend image in Kubernetes
+      # 10. Verify AWS identity
+      - name: Verify AWS identity
+        run: |
+          aws sts get-caller-identity
+
+      # 11. Configure kubectl for EKS
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
+
+      # 12. Verify EKS connection
+      - name: Verify EKS connection
+        run: |
+          kubectl get nodes
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }}
+
+      # 13. Update frontend image in Kubernetes
       - name: Update frontend deployment
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl set image deployment/frontend \
-            frontend=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }} \
-            -n credit-card-app"  
-            
-    # 11. Check Kubernetes rollout
+          kubectl set image deployment/${{ env.K8S_DEPLOYMENT }} \
+            ${{ env.K8S_CONTAINER }}=${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+      # 14. Check Kubernetes rollout
       - name: Check rollout status
         run: |
-          ssh -i ~/.ssh/ec2-key.pem \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} \
-            "kubectl rollout status deployment/frontend \
-            -n credit-card-app"
+          kubectl rollout status \
+            deployment/${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=5m
+
+      # 15. Show final deployment status
+      - name: Show deployment status
+        run: |
+          echo "Deployment:"
+          kubectl get deployment \
+            ${{ env.K8S_DEPLOYMENT }} \
+            -n ${{ env.K8S_NAMESPACE }}
+
+          echo "-------------------------------"
+
+          echo "Pods:"
+          kubectl get pods \
+            -n ${{ env.K8S_NAMESPACE }}
