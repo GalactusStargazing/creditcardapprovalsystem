@@ -42,9 +42,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ============================================================
+      # 2. Gitleaks secret scan
+      # ============================================================
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       # ============================================================
-      # 2. Setup Python
+      # 3. Setup Python
       # ============================================================
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -53,7 +61,7 @@ jobs:
 
 
       # ============================================================
-      # 3. Install Auth Service dependencies
+      # 4. Install Auth Service dependencies
       # ============================================================
       - name: Install dependencies
         working-directory: ./auth-service
@@ -63,7 +71,7 @@ jobs:
 
 
       # ============================================================
-      # 4. Run tests
+      # 5. Run tests
       # ============================================================
       - name: Run tests
         working-directory: ./auth-service
@@ -72,7 +80,7 @@ jobs:
 
 
       # ============================================================
-      # 5. Login to Docker Hub
+      # 6. Login to Docker Hub
       # ============================================================
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -82,7 +90,7 @@ jobs:
 
 
       # ============================================================
-      # 6. Build Docker image
+      # 7. Build Docker image
       # ============================================================
       - name: Build Docker Image
         run: |
@@ -92,7 +100,7 @@ jobs:
 
 
       # ============================================================
-      # 7. Scan Docker image with Trivy
+      # 8. Scan Docker image with Trivy
       # ============================================================
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@v0.36.0
@@ -105,7 +113,7 @@ jobs:
 
 
       # ============================================================
-      # 8. Push Docker image to Docker Hub
+      # 9. Push Docker image to Docker Hub
       # ============================================================
       - name: Push to Docker Hub
         run: |
@@ -114,7 +122,7 @@ jobs:
 
 
       # ============================================================
-      # 9. Configure AWS credentials
+      # 10. Configure AWS credentials
       # ============================================================
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -125,7 +133,7 @@ jobs:
 
 
       # ============================================================
-      # 10. Verify AWS identity
+      # 11. Verify AWS identity
       # ============================================================
       - name: Verify AWS identity
         run: |
@@ -133,7 +141,7 @@ jobs:
 
 
       # ============================================================
-      # 11. Configure kubectl for EKS
+      # 12. Configure kubectl for EKS
       # ============================================================
       - name: Update kubeconfig
         run: |
@@ -143,7 +151,7 @@ jobs:
 
 
       # ============================================================
-      # 12. Verify EKS connection
+      # 13. Verify EKS connection
       # ============================================================
       - name: Verify EKS connection
         run: |
@@ -152,7 +160,7 @@ jobs:
 
 
       # ============================================================
-      # 13. Deploy Auth Service
+      # 14. Deploy Auth Service
       # ============================================================
       - name: Deploy Auth service
         run: |
@@ -162,7 +170,7 @@ jobs:
 
 
       # ============================================================
-      # 14. Wait for rollout
+      # 15. Wait for rollout
       # ============================================================
       - name: Check Auth rollout
         run: |
@@ -173,7 +181,7 @@ jobs:
 
 
       # ============================================================
-      # 15. Show final deployment status
+      # 16. Show final deployment status
       # ============================================================
       - name: Show deployment status
         run: |
