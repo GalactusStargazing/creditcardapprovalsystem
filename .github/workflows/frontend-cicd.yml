@@ -72,14 +72,14 @@ jobs:
 
 
       # 8. Scan Docker image with Trivy
-      - name: Run Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@0.33.1
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }}
-          format: table
-          exit-code: "1"
+          image-ref: '${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
           ignore-unfixed: true
-          severity: CRITICAL,HIGH
+          severity: 'HIGH,CRITICAL'
 
 
       # 9. Push Docker image to Docker Hub
