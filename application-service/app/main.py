@@ -11,6 +11,7 @@ from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 
 from app.api.routes import applications
 
@@ -29,6 +30,7 @@ trace.set_tracer_provider(provider)
 
 LoggingInstrumentor().instrument(set_logging_format=False)
 RequestsInstrumentor().instrument()
+HTTPXClientInstrumentor().instrument()
 
 app = FastAPI(title="Application Service", version="1.0.0")
 

@@ -17,3 +17,4 @@ opentelemetry-exporter-otlp
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-requests
 opentelemetry-instrumentation-logging
+opentelemetry-instrumentation-httpx
