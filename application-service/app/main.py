@@ -17,7 +17,7 @@ from app.api.routes import applications
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s - trace_id=%(otelTraceID)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     force=True
 )
 
@@ -28,7 +28,7 @@ otlp_exporter = OTLPSpanExporter(endpoint="tempo.monitoring.svc.cluster.local:43
 provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 trace.set_tracer_provider(provider)
 
-LoggingInstrumentor().instrument(set_logging_format=False)
+LoggingInstrumentor().instrument(set_logging_format=True)
 RequestsInstrumentor().instrument()
 HTTPXClientInstrumentor().instrument()
 
