@@ -24,6 +24,8 @@ jobs:
       # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+         fetch-depth: 0
 
       # 2. Gitleaks secret scan
       - name: Gitleaks secret scan
