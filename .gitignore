@@ -70,3 +70,4 @@ monitoring/grafana-admin-secret.yaml
 # ============================================================
 .DS_Store
 *Zone.Identifier
+monitoring/discord-webhook-secret.yaml
