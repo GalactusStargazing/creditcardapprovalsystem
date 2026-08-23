@@ -3,7 +3,7 @@ name: Auth Service CI/CD
 on:
   push:
     branches:
-      - eks_test
+      - develop
     paths:
       - "auth-service/**"
 
