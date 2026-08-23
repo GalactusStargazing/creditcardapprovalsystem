@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - security-scan
+      - build-image
     
     steps:
 
