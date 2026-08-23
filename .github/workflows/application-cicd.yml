@@ -99,6 +99,8 @@ jobs:
     needs:
       - build-image
 
+    steps:
+
       # 9. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
