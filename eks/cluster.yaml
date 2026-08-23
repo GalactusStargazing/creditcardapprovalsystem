@@ -1,0 +1,29 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: credit-card-eks
+  region: ap-south-1
+  version: "1.36"
+
+availabilityZones:
+  - ap-south-1a
+  - ap-south-1b
+
+iam:
+  withOIDC: true
+
+vpc:
+  cidr: 10.20.0.0/16
+  nat:
+    gateway: Single
+
+managedNodeGroups:
+  - name: app-nodes1
+    instanceType: c7i-flex.large
+    desiredCapacity: 1
+    minSize: 0
+    maxSize: 2
+    privateNetworking: true
+    volumeSize: 25
+    volumeType: gp3
