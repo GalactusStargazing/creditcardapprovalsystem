@@ -3,7 +3,7 @@ name: Frontend Service CI/CD
 on:
   push:
     branches:
-      - eks_test
+      - develop
     paths:
       - "frontend/**"
       
