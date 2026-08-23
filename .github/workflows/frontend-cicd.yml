@@ -63,7 +63,7 @@ jobs:
           npm run lint
 
   build-image:
-    name: Build Docker Image
+    name: Build, Scan and Push Docker Image
     runs-on: ubuntu-latest
 
     needs:
@@ -91,14 +91,7 @@ jobs:
             -t ${{ secrets.DOCKERHUB_USERNAME }}/credit-card-frontend:${{ github.sha }} \
             ./frontend
 
-  security-scan:
-    name: Container Security Scan and Image Push
-    runs-on: ubuntu-latest
-
-    needs:
-      - build-image
-    
-    steps:
+  
 
       # 9. Scan Docker image with Trivy
       - name: Trivy vulnerability scan
