@@ -1,23 +1,72 @@
+# ============================================================
 # Python
+# ============================================================
 venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .env
+*.env
+!.env.example
 
+# Test environment files
+auth-service/.env.test
+application-service/.env.test
+credit-decision-service/.env.test
+
+
+# ============================================================
 # Node / Angular
+# ============================================================
 node_modules/
 frontend/dist/
 frontend/.angular/
 
-# OS
-.DS_Store
-*Zone.Identifier
-auth-service/.env.test
-application-service/.env.test
-credit-decision-service/.env.test
-.env
 
-# Kubernetes secrets - never commit real values
+# ============================================================
+# Terraform
+# ============================================================
+.terraform/
+
+# Terraform state files - NEVER commit
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Terraform variable files - may contain secrets
+*.tfvars
+*.tfvars.json
+
+# Terraform lock file - KEEP IN GIT
+# .terraform.lock.hcl
+
+
+# ============================================================
+# SSH / Private Keys
+# ============================================================
+*.pem
+*.key
+
+
+# ============================================================
+# Kubernetes Secrets
+# ============================================================
 k8s/*/secret.yaml
 monitoring/grafana-admin-secret.yaml
+
+
+# ============================================================
+# IDE / Editor
+# ============================================================
 .idea/
+.vscode/
+
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+*Zone.Identifier
