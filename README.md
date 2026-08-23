@@ -4,8 +4,7 @@ A cloud-native, microservices-based credit card approval platform built with Fas
 
 ![Architecture Diagram](./ARCHITECTURE.md)
 
-**Live Demo**: https://creditcard.example.com  
-**Status**: [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]() [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+**Live Demo**: https://dpscx2hwyvrkj.cloudfront.net
 
 ---
 
