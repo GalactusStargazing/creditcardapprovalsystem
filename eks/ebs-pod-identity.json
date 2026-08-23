@@ -1,0 +1,6 @@
+[
+  {
+    "serviceAccount": "ebs-csi-controller-sa",
+    "roleArn": "arn:aws:iam::071340280708:role/AmazonEKSEBSCSIDriverRole"
+  }
+]
