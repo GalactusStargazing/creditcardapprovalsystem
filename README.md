@@ -235,6 +235,6 @@ Score ≥ 80 → **APPROVED**, otherwise **REJECTED**.
 
 - [x] Dockerize each service
 - [x] Docker Compose for local orchestration
-- [ ] Kubernetes deployment
-- [ ] AWS EC2 hosting
-- [ ] Monitoring with Prometheus + Grafana
+- [x] Kubernetes deployment
+- [x] AWS EC2 hosting
+- [x] Monitoring with Prometheus + Grafana
